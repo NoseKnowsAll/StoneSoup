@@ -273,6 +273,18 @@ end
 function clear_pot!(pot, discard_pile)
     draw!(pot, discard_pile, length(pot))
 end
+" Check if list of ingredients can viably be made into specified recipe "
+function is_viable_recipe(ingredients, recipe)
+    indices = LinearIndices(recipe)[:]
+    for ingredient in ingredients
+        index = findfirst(x->recipe[x] == ingredient, indices)
+        if isnothing(index)
+            return false
+        end
+        deleteat!(indices, index)
+    end
+    return true
+end
 " Place a user-specified ingredient into a user-specified pot "
 function place_ingredients!(recipes, recipe_deck, ingredient_deck, discard_pile, pots, river, players, curr_player, previous_pot)
     multiline_print(pots, "Current pots")
@@ -333,7 +345,7 @@ function place_ingredients!(recipes, recipe_deck, ingredient_deck, discard_pile,
         end
         found_recipe = false
         for (itr,recipe) in enumerate(players[curr_player].recipes)
-            if issubset(pots[pot_index], recipe.ingredients)
+            if is_viable_recipe(pots[pot_index], recipe.ingredients)
                 # There was no bluff - player earns their recipe
                 println("\nNot a bluff! $(players[curr_player].name) had $recipe\n")
                 players[curr_player].pts += recipe.pts
@@ -452,14 +464,15 @@ end
 " Report on stats of players - Who won? Who had which recipes? Etc "
 function closing_stats(recipes, recipe_deck, ingredient_deck, discard_pile, pots, river, players, curr_player)
     winner = findfirst(x->x.pts>= win_score, players)
-    if winner !== nothing
-        println("The winner is: $(players[winner].name)!\n\n")
+    if !isnothing(winner)
+        println("The winner is: $(players[winner].name)!\n")
     end
     for i = 1:length(players)
         println(players[i])
-        if winner !== nothing
+        if !isnothing(winner)
             multiline_print(players[i].recipes,"with secret recipes")
         end
+        println()
     end
 end
 " Main function for playing Stone Soup "
