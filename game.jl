@@ -340,6 +340,7 @@ function place_ingredients!(recipes, recipe_deck, ingredient_deck, discard_pile,
                 new_recipe = pop!(recipe_deck)
                 players[curr_player].recipes[itr] = new_recipe
                 found_recipe = true
+                # And pot gets cleared
                 clear_pot!(pots[pot_index], discard_pile)
                 break
             end
@@ -358,6 +359,8 @@ function place_ingredients!(recipes, recipe_deck, ingredient_deck, discard_pile,
                 deleteat!(players[curr_player].recipes, steal_index)
             end
             push!(players[bluff_index].recipes, to_steal)
+            # And pot gets cleared
+            clear_pot!(pots[pot_index], discard_pile)
         end
     elseif result ∈ ["no", "No", "n", "N"]
         # No effect if nobody calls bluff
@@ -383,6 +386,7 @@ function place_ingredients!(recipes, recipe_deck, ingredient_deck, discard_pile,
                             end
                         end
                     end
+                    # And pot gets cleared
                     clear_pot!(pots[pot_index], discard_pile)
                 elseif result ∈ ["no", "No", "n", "N"]
                     # No effect if nobody claims recipe
@@ -433,7 +437,8 @@ function next_round(recipes, recipe_deck, ingredient_deck, discard_pile, pots, r
                 curr_action += 1
             end
         elseif result ∈ ["show", "Show", "s", "S"]
-            multiline_print(recipes)
+            multiline_print(recipes, "All recipes")
+            println()
         elseif result ∈ ["view", "v", "V"]
             print_game_state(discard_pile, river, pots, players, curr_player)
         elseif result ∈ ["peek", "hidden", "Hidden", "h", "H"]
