@@ -445,8 +445,12 @@ function next_round(recipes, recipe_deck, ingredient_deck, discard_pile, pots, r
                 curr_action += 1
             end
         elseif result ∈ ["swap", "recipe", "Recipe", "r", "R"]
-            if swap_recipes!(players[curr_player], recipe_deck)
-                curr_action += 1
+            if !stones_drawn[curr_action]
+                if swap_recipes!(players[curr_player], recipe_deck)
+                    curr_action += 1
+                end
+            else
+                println("Not allowed to cancel a draw and then swap recipes!")
             end
         elseif result ∈ ["show", "Show", "s", "S"]
             multiline_print(recipes, "All recipes")
