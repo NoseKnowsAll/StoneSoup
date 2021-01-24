@@ -141,14 +141,14 @@ function init_players!(num_players, ingredient_deck, recipe_deck)
     " Choose 2 out of 3 recipes from the deck according to user input "
     function choose_recipes!(name, eventual_recipes, recipe_deck)
         draw!(recipe_deck, eventual_recipes, 3)
-        hide_info(name, "You randomly drew these recipes: $eventual_recipes", false)
+        hide_info(name, (eventual_recipes,"You randomly drew these recipes"), false)
         index = input_index("recipe you wish to return to the deck",length(eventual_recipes))
         while index == false
             index = input_index("recipe you wish to return to the deck",length(eventual_recipes))
         end
         to_reshuffle = eventual_recipes[index]
         deleteat!(eventual_recipes, index)
-        hide_info(name, "You will play the game with these recipes: $eventual_recipes", true)
+        hide_info(name, (eventual_recipes,"You will play the game with these recipes"), true)
         # Add the rejected recipe back to global recipe deck and reshuffle
         push!(recipe_deck, to_reshuffle)
         shuffle!(recipe_deck)
@@ -192,10 +192,20 @@ function print_game_state(discard_pile, river, pots, players, curr_player)
     println()
 end
 " Print given info, but only allow for `name` to view it "
-function hide_info(name, info, hide=true)
+function hide_info(name, info::String, hide=true)
     println("ONLY $(uppercase(name)) MAY VIEW THIS INFO. Press enter to view")
     readline()
     println(info)
+    if hide
+        println("Press enter to hide this information")
+        readline()
+        [println() for i = 1:console_size]
+    end
+end
+function hide_info(name, info::Tuple, hide=true)
+    println("ONLY $(uppercase(name)) MAY VIEW THIS INFO. Press enter to view")
+    readline()
+    multiline_print(first(info), last(info))
     if hide
         println("Press enter to hide this information")
         readline()
@@ -255,7 +265,7 @@ function discard_ingredients!(player, discard_pile)
 end
 " Swap out a recipe of player's choice for top recipe in `recipe_deck` "
 function swap_recipes!(player, recipe_deck)
-    hide_info(player.name, "Your current recipes are $(player.recipes)", false)
+    hide_info(player.name, (player.recipes,"Your current recipes are"), false)
     index = input_index("recipe you wish to discard",length(player.recipes))
     if index == false
         return false
@@ -266,7 +276,7 @@ function swap_recipes!(player, recipe_deck)
     player.recipes[index] = to_draw
     push!(recipe_deck, to_discard)
     shuffle!(recipe_deck)
-    hide_info(player.name, "New recipes are $(player.recipes)")
+    hide_info(player.name, (player.recipes,"New recipes are"))
     return true
 end
 " Empties the pot into the discard pile "
@@ -458,7 +468,7 @@ function next_round(recipes, recipe_deck, ingredient_deck, discard_pile, pots, r
         elseif result ∈ ["view", "v", "V"]
             print_game_state(discard_pile, river, pots, players, curr_player)
         elseif result ∈ ["peek", "hidden", "Hidden", "h", "H"]
-            hide_info(players[curr_player].name, players[curr_player].recipes)
+            hide_info(players[curr_player].name, (players[curr_player].recipes,"Your current recipes are"))
         else
             println("Invalid action - please try again!")
         end
